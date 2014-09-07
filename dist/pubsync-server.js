@@ -938,13 +938,6 @@ define('composition-root',['require','injector','server','publisher','file-hashe
         injector.register('DebugLogger', DebugLogger);
     }
 });
-define('helpers/node-error-handler',['require','helpers/is-object'],function (require) {
-    var isObject = require('helpers/is-object');
-    process.on('uncaughtException', function (err) {
-        console.error(isObject(err) ? err.stack : err);
-    });
-});
-
 var util = require('util');
 
 var requirejs;
@@ -964,8 +957,7 @@ requirejs.config({
 process.on('uncaughtException', function(err) {
     console.error(util.inspect(err));
 });
-requirejs(['composition-root', 'helpers/node-error-handler'], function(CompositionRoot) {
-    console.log('cb');
+requirejs(['composition-root'], function(CompositionRoot) {
     var compositionRoot = new CompositionRoot();
     var server = compositionRoot.injector.resolve('Server');
     server.start();

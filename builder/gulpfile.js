@@ -5,7 +5,7 @@ var gulp = require('gulp'),
 
 var srcPath = '../src';
 var destPath = '../dist';
-gulp.task('default', ['compile', 'copy_modules'], function () {
+gulp.task('default', ['compile', 'copy_modules', 'copy_package'], function () {
 
 });
 
@@ -13,7 +13,7 @@ gulp.task('clean', function () {
     return gulp.src(destPath, {
         read: false
     })
-        .pipe(clean());
+        .pipe(clean({force: true}));
 });
 
 gulp.task('copy_modules', ['clean'], function () {
@@ -23,14 +23,14 @@ gulp.task('copy_modules', ['clean'], function () {
 
 gulp.task('copy_package', ['clean'], function () {
     gulp.src(srcPath + '/package.json')
-        .pipe(gulp.dest(destPath + '/package.json'));
+        .pipe(gulp.dest(destPath + '/'));
 });
 
 gulp.task('compile', ['clean'], function (cb) {
     rjs.optimize({
         baseUrl: srcPath + "/app",
         name: "main",
-        out: destPath + "/main.js",
+        out: destPath + "/pubsync-server.js",
         mainConfigFile: srcPath + '/app/main.js',
         fileExclusionRegExp: /(^\.)|(node_modules)/,
         paths: {

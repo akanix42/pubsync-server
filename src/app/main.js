@@ -17,8 +17,7 @@ requirejs.config({
 process.on('uncaughtException', function(err) {
     console.error(util.inspect(err));
 });
-requirejs(['composition-root', 'helpers/node-error-handler'], function(CompositionRoot) {
-    console.log('cb');
+requirejs(['composition-root'], function(CompositionRoot) {
     var compositionRoot = new CompositionRoot();
     var server = compositionRoot.injector.resolve('Server');
     server.start();
