@@ -26,7 +26,7 @@ node dist/pubsync-server.js
 
 Configuration
 ---
-There is currently no configuration at this time (just edit the code). Reading from a config.json is a planned feature.
+There is currently no server configuration available at this time (just edit the code). Reading from a config.json is a planned feature.
 
 License
 ---
