@@ -10,7 +10,7 @@ gulp.task('default', ['compile', 'copy_modules'], function () {
 });
 
 gulp.task('clean', function () {
-    return gulp.src('build', {
+    return gulp.src(destPath, {
         read: false
     })
         .pipe(clean());
@@ -19,6 +19,11 @@ gulp.task('clean', function () {
 gulp.task('copy_modules', ['clean'], function () {
     gulp.src(srcPath + '/node_modules/**/*')
         .pipe(gulp.dest(destPath + '/node_modules'));
+});
+
+gulp.task('copy_package', ['clean'], function () {
+    gulp.src(srcPath + '/package.json')
+        .pipe(gulp.dest(destPath + '/package.json'));
 });
 
 gulp.task('compile', ['clean'], function (cb) {
@@ -49,7 +54,6 @@ gulp.task('compile', ['clean'], function (cb) {
         },
         optimize: 'none'
     }, function () {
-        // console.log('build response', buildResponse);
         cb();
     }, cb);
 });

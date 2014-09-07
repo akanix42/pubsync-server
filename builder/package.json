@@ -1,0 +1,31 @@
+{
+  "name": "pubsync-builder",
+  "version": "0.0.0",
+  "description": "builder for pubsync-server",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "gulp": "~3.8.7",
+    "requirejs": "~2.1.14",
+    "gulp-clean": "~0.3.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nathantreid/pubsync-server"
+  },
+  "keywords": [
+    "publish",
+    "sync",
+    "files",
+    "copy"
+  ],
+  "author": "Nathan Reid",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nathantreid/pubsync-server/issues"
+  },
+  "homepage": "https://github.com/nathantreid/pubsync-server"
+}
