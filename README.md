@@ -10,10 +10,11 @@ The server (receiving) end of a tool for publishing files from 1 computer to ano
 * Client available here: [nathantreid/pubsync-client]
 
 
-Installation
+Installation on Windows (untested on other OS's)
 ---
 ```sh
 npm install pubsync-server
+robocopy /e /move node_modules\pubsync-server .
 ```
 
 Usage
@@ -21,7 +22,7 @@ Usage
 The server runs on port 3000.
 
 ```sh
-node dist/pubsync-server.js
+node pubsync-server.js
 ```
 
 Configuration
