@@ -19,6 +19,7 @@ npm install pubsync-server
 Usage
 ---
 The server runs on port 3000.
+
 ```sh
 node dist/pubsync-server.js
 ```
