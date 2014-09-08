@@ -153,6 +153,7 @@ define(function (require) {
             console.log('publishing');
             if (!fs.existsSync(self.uploadPath())) {
                 console.log('published');
+                result.wasSuccessful = true;
                 deferred.resolve(true);
             } else
                 fs.copy(self.uploadPath(), self.config.destination.path, function (err) {

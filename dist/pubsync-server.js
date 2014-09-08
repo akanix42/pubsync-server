@@ -562,6 +562,7 @@ define('session',['require','helpers/when-makeDirectory','when','fs-extra','path
             console.log('publishing');
             if (!fs.existsSync(self.uploadPath())) {
                 console.log('published');
+                result.wasSuccessful = true;
                 deferred.resolve(true);
             } else
                 fs.copy(self.uploadPath(), self.config.destination.path, function (err) {
