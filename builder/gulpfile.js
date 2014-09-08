@@ -1,7 +1,7 @@
 var gulp = require('gulp'),
     clean = require('gulp-clean'),
+    rimraf = require('rimraf'),
     rjs = require('requirejs');
-;
 
 var srcPath = '../src';
 var destPath = '../dist';
@@ -10,7 +10,7 @@ gulp.task('default', ['compile', 'copy_modules', 'copy_package'], function () {
 });
 
 gulp.task('clean', function () {
-    return gulp.src(destPath, {
+    return gulp.src(destPath + '/*', {
         read: false
     })
         .pipe(clean({force: true}));
@@ -22,7 +22,14 @@ gulp.task('copy_modules', ['clean'], function () {
 });
 
 gulp.task('copy_package', ['clean'], function () {
-    gulp.src(srcPath + '/package.json')
+    gulp.src([
+                srcPath + '/package.json',
+                srcPath + '/install-service.js',
+                srcPath + '/install-service.cmd',
+                srcPath + '/uninstall-service.js',
+                srcPath + '/uninstall-service.cmd'
+        ],
+        {base: srcPath + '/' })
         .pipe(gulp.dest(destPath + '/'));
 });
 

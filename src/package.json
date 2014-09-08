@@ -1,6 +1,6 @@
 {
   "name": "pubsync-server",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "pubsync server for publishing files to another computer",
   "main": "pubsync-server.js",
   "dependencies": {
