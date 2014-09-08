@@ -47,11 +47,12 @@ define(function (require) {
         function publish(files) {
             filesToNotDelete = {};
             for (var i = 0; i < files.length; i++)
-                filesToNotDelete[files[i].replace(/\\/, '/')] = '';
+                filesToNotDelete[files[i].replace(/\\/g, '/')] = '';
             return backupFilesThatWillBeOverwrittenOrDeleted()
                 .then(deleteMissingFiles)
                 .then(publishFiles)
                 .catch(function (err) {
+                    publishResults[publishResults.length - 1].error = err;
                     return when(restore());
                 })
                 .then(function () {
@@ -88,8 +89,8 @@ define(function (require) {
             if (stat.isFile() && willBeOverwritten(relativePath))
                 return true;
             if (willBeDeleted(relativePath)) {
-                if (stat.isFile())
-                    filesToDelete.push(filename);
+                //                if (stat.isFile())
+                filesToDelete.push(filename.replace(/\/$/,''));
                 return true;
             }
             return false;
@@ -133,7 +134,8 @@ define(function (require) {
 
         function deleteMissingFile(file) {
             var deferred = when.defer();
-            fs.unlink(file, function (err) {
+
+            fs.remove(file, function (err) {
                 if (err) {
                     deferred.reject(err);
                     return;

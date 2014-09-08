@@ -9,7 +9,7 @@ define(function (require) {
 
     return Server;
 
-    function Server(debugLogger, sessionFactory, configFactory, quickDiffFactory, hashDiffFactory, fileUploadFactory) {
+    function Server(debugLogger, sessionFactory, configFactory, quickDiffFactory, hashDiffFactory, fileUploadFactory, directoryUploadFactory) {
 
         var self = this;
         self.start = start;
@@ -19,6 +19,7 @@ define(function (require) {
             app.use(bodyParser.json());
             app.post('/sessions/:sessionId', handleSessionRequest);
             app.post('/sessions/:sessionId/files/:file', handleUploadRequest);
+            app.post('/sessions/:sessionId/directories', handleDirectoryUploadRequest);
             app.get('/sessions/:sessionId/files/:file/diffs/quick', handleQuickDiffRequest);
             app.get('/sessions/:sessionId/files/:file/diffs/hash', handleHashDiffRequest);
             app.post('/sessions/:sessionId/publish', handlePublishRequest);
@@ -92,11 +93,20 @@ define(function (require) {
                     });
             }
 
+            function handleDirectoryUploadRequest(request, response) {
+                var session = sessionFactory.create(request.params.sessionId);
+                var directory = path.join(session.uploadPath(), request.body.path);
+
+                when(directoryUploadFactory.create(directory).process())
+                    .done(function () {
+                        response.end();
+                    });
+            }
+
             function handlePublishRequest(request, response) {
                 var session = sessionFactory.create(request.params.sessionId);
                 session.publish(request.body)
                     .then(function (result) {
-
                         response.write(JSON.stringify(result));
                         response.end();
                     });

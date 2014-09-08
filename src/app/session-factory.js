@@ -1,5 +1,5 @@
 define(function (require) {
-    var Session = require('Session');
+    var Session = require('session');
     return Constructor;
 
     function Constructor() {

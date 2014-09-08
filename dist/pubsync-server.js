@@ -255,7 +255,7 @@ define('server',['require','when','when-walk','fs','util','express','body-parser
 
     return Server;
 
-    function Server(debugLogger, sessionFactory, configFactory, quickDiffFactory, hashDiffFactory, fileUploadFactory) {
+    function Server(debugLogger, sessionFactory, configFactory, quickDiffFactory, hashDiffFactory, fileUploadFactory, directoryUploadFactory) {
 
         var self = this;
         self.start = start;
@@ -265,6 +265,7 @@ define('server',['require','when','when-walk','fs','util','express','body-parser
             app.use(bodyParser.json());
             app.post('/sessions/:sessionId', handleSessionRequest);
             app.post('/sessions/:sessionId/files/:file', handleUploadRequest);
+            app.post('/sessions/:sessionId/directories', handleDirectoryUploadRequest);
             app.get('/sessions/:sessionId/files/:file/diffs/quick', handleQuickDiffRequest);
             app.get('/sessions/:sessionId/files/:file/diffs/hash', handleHashDiffRequest);
             app.post('/sessions/:sessionId/publish', handlePublishRequest);
@@ -338,11 +339,20 @@ define('server',['require','when','when-walk','fs','util','express','body-parser
                     });
             }
 
+            function handleDirectoryUploadRequest(request, response) {
+                var session = sessionFactory.create(request.params.sessionId);
+                var directory = path.join(session.uploadPath(), request.body.path);
+
+                when(directoryUploadFactory.create(directory).process())
+                    .done(function () {
+                        response.end();
+                    });
+            }
+
             function handlePublishRequest(request, response) {
                 var session = sessionFactory.create(request.params.sessionId);
                 session.publish(request.body)
                     .then(function (result) {
-
                         response.write(JSON.stringify(result));
                         response.end();
                     });
@@ -350,14 +360,6 @@ define('server',['require','when','when-walk','fs','util','express','body-parser
 
         }
     }
-});
-define('publisher',['require','when','when-walk','fs','util'],function (require) {
-    var when = require('when'),
-        walk = require('when-walk'),
-        fs = require('fs'),
-        util = require('util');
-
-
 });
 define('file-hasher',['require','when','fs','crypto'],function (require) {
     var when = require('when'),
@@ -405,7 +407,7 @@ define('helpers/when-makeDirectory',['require','when','mkdirp'],function (requir
         return deferred.promise;
     }
 });
-define('Session',['require','helpers/when-makeDirectory','when','fs-extra','path'],function (require) {
+define('session',['require','helpers/when-makeDirectory','when','fs-extra','path'],function (require) {
     var makeDirectory = require('helpers/when-makeDirectory'),
         when = require('when'),
         fs = require('fs-extra'),
@@ -454,11 +456,12 @@ define('Session',['require','helpers/when-makeDirectory','when','fs-extra','path
         function publish(files) {
             filesToNotDelete = {};
             for (var i = 0; i < files.length; i++)
-                filesToNotDelete[files[i].replace(/\\/, '/')] = '';
+                filesToNotDelete[files[i].replace(/\\/g, '/')] = '';
             return backupFilesThatWillBeOverwrittenOrDeleted()
                 .then(deleteMissingFiles)
                 .then(publishFiles)
                 .catch(function (err) {
+                    publishResults[publishResults.length - 1].error = err;
                     return when(restore());
                 })
                 .then(function () {
@@ -495,8 +498,8 @@ define('Session',['require','helpers/when-makeDirectory','when','fs-extra','path
             if (stat.isFile() && willBeOverwritten(relativePath))
                 return true;
             if (willBeDeleted(relativePath)) {
-                if (stat.isFile())
-                    filesToDelete.push(filename);
+                //                if (stat.isFile())
+                filesToDelete.push(filename.replace(/\/$/,''));
                 return true;
             }
             return false;
@@ -540,7 +543,8 @@ define('Session',['require','helpers/when-makeDirectory','when','fs-extra','path
 
         function deleteMissingFile(file) {
             var deferred = when.defer();
-            fs.unlink(file, function (err) {
+
+            fs.remove(file, function (err) {
                 if (err) {
                     deferred.reject(err);
                     return;
@@ -597,8 +601,8 @@ define('Session',['require','helpers/when-makeDirectory','when','fs-extra','path
     }
 })
 ;
-define('session-factory',['require','Session'],function (require) {
-    var Session = require('Session');
+define('session-factory',['require','session'],function (require) {
+    var Session = require('session');
     return Constructor;
 
     function Constructor() {
@@ -784,6 +788,36 @@ var fs = require('fs'),
 
     }
 });
+define('directory-upload',['require','when','helpers/when-makeDirectory'],function (require) {
+    var when = require('when'),
+        makeDirectory = require('helpers/when-makeDirectory');
+
+    return DirectoryUpload;
+
+    function DirectoryUpload(directoryPath) {
+        var self = this;
+
+        self.process = function process() {
+            return when(makeDirectory(directoryPath));
+        };
+    }
+});
+
+
+
+define('directory-upload-factory',['require','directory-upload'],function (require) {
+    var DirectoryUpload = require('directory-upload');
+    return DirectoryUploadFactory;
+
+    function DirectoryUploadFactory() {
+        var self = this;
+
+        self.create = function create(DirectoryPath) {
+            return new DirectoryUpload(DirectoryPath);
+        };
+
+    }
+});
 define('filter',['require','path'],function (require) {
     var path = require('path');
 
@@ -908,15 +942,15 @@ define('debug-logger',['require'],function (require) {
         };
     }
 });
-define('composition-root',['require','injector','server','publisher','file-hasher','session-factory','quick-diff-factory','hash-diff-factory','file-upload-factory','config-factory','debug-logger'],function (require) {
+define('composition-root',['require','injector','server','file-hasher','session-factory','quick-diff-factory','hash-diff-factory','file-upload-factory','directory-upload-factory','config-factory','debug-logger'],function (require) {
     var Injector = require('injector'),
         Server = require('server'),
-        Publisher = require('publisher'),
         FileHasher = require('file-hasher'),
         SessionFactory = require('session-factory'),
         QuickDiffFactory = require('quick-diff-factory'),
         HashDiffFactory = require('hash-diff-factory'),
         FileUploadFactory = require('file-upload-factory'),
+        DirectoryUploadFactory = require('directory-upload-factory'),
         ConfigFactory = require('config-factory'),
         DebugLogger = require('debug-logger');
 
@@ -927,11 +961,11 @@ define('composition-root',['require','injector','server','publisher','file-hashe
         var injector = self.injector = new Injector();
 
         injector.register('Server', Server);
-        injector.register('Publisher', Publisher);
         injector.register('SessionFactory', SessionFactory, true);
         injector.register('QuickDiffFactory', QuickDiffFactory, true);
         injector.register('HashDiffFactory', HashDiffFactory, true);
         injector.register('FileUploadFactory', FileUploadFactory, true);
+        injector.register('DirectoryUploadFactory', DirectoryUploadFactory, true);
         injector.register('ConfigFactory', ConfigFactory, true);
         injector.register('FileHasher', FileHasher, true);
         injector.register('Debug', DebugLogger);
