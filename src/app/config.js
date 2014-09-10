@@ -16,15 +16,6 @@ define(function (require) {
         inherit(AsyncConstructor, self);
 
         config.debugLogger = debugLogger;
-//        config.sessionId = Uuid.raw();
-//        debugLogger.log(config);
-
-        config.sourcePath = path.resolve(config.sourcePath);
-        fs.exists(config.sourcePath, function (exists) {
-            if (!exists)
-                debugLogger.log('The source path must exist!');
-            self.constructorPromise.resolve();
-        });
         parseFilters(config.filters);
 
         extend(self, config);
