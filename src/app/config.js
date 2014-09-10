@@ -6,6 +6,8 @@ define(function (require) {
         isObject = require('helpers/is-object'),
         AsyncConstructor = require('helpers/async-constructor'),
         inherit = require('helpers/inherit'),
+        when = require('when'),
+        makeDirectory = require('helpers/when-makeDirectory'),
         fs = require('fs');
 
     return Constructor;
@@ -16,6 +18,12 @@ define(function (require) {
         inherit(AsyncConstructor, self);
 
         config.debugLogger = debugLogger;
+
+        makeDirectory(config.destination.path)
+            .then(function(){
+                self.constructorPromise.resolve();
+            });
+
         parseFilters(config.filters);
 
         extend(self, config);

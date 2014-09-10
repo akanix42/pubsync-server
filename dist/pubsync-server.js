@@ -877,7 +877,7 @@ define('helpers/inherit',['require','extend'],function (require) {
         self.base = extend({base: self.base}, self);
     }
 });
-define('config',['require','filter','uuid-lib','extend','path','helpers/is-object','helpers/async-constructor','helpers/inherit','fs'],function (require) {
+define('config',['require','filter','uuid-lib','extend','path','helpers/is-object','helpers/async-constructor','helpers/inherit','when','helpers/when-makeDirectory','fs'],function (require) {
     var Filter = require('filter'),
         Uuid = require('uuid-lib'),
         extend = require('extend'),
@@ -885,6 +885,8 @@ define('config',['require','filter','uuid-lib','extend','path','helpers/is-objec
         isObject = require('helpers/is-object'),
         AsyncConstructor = require('helpers/async-constructor'),
         inherit = require('helpers/inherit'),
+        when = require('when'),
+        makeDirectory = require('helpers/when-makeDirectory'),
         fs = require('fs');
 
     return Constructor;
@@ -895,15 +897,12 @@ define('config',['require','filter','uuid-lib','extend','path','helpers/is-objec
         inherit(AsyncConstructor, self);
 
         config.debugLogger = debugLogger;
-//        config.sessionId = Uuid.raw();
-//        debugLogger.log(config);
 
-        config.sourcePath = path.resolve(config.sourcePath);
-        fs.exists(config.sourcePath, function (exists) {
-            if (!exists)
-                debugLogger.log('The source path must exist!');
-            self.constructorPromise.resolve();
-        });
+        makeDirectory(config.destination.path)
+            .then(function(){
+                self.constructorPromise.resolve();
+            });
+
         parseFilters(config.filters);
 
         extend(self, config);
