@@ -16,7 +16,7 @@ define(function (require) {
 
         function start() {
             var app = express();
-            app.use(bodyParser.json());
+            app.use(bodyParser.json({limit: '50mb'}));
             app.post('/sessions/:sessionId', handleSessionRequest);
             app.post('/sessions/:sessionId/files/:file', handleUploadRequest);
             app.post('/sessions/:sessionId/directories', handleDirectoryUploadRequest);

@@ -221,7 +221,7 @@ define('when-walk',['require','fs','path','when','when/node/function'],function 
         , nodefn = require('when/node/function');
 
     return walk;
-    
+
     function walk(options) {
         var directory = options.directory, includeDir = options.includeDirectories, filterCallback = options.filterCallback;
         var results = [];
@@ -262,7 +262,7 @@ define('server',['require','when','when-walk','fs','util','express','body-parser
 
         function start() {
             var app = express();
-            app.use(bodyParser.json());
+            app.use(bodyParser.json({limit: '50mb'}));
             app.post('/sessions/:sessionId', handleSessionRequest);
             app.post('/sessions/:sessionId/files/:file', handleUploadRequest);
             app.post('/sessions/:sessionId/directories', handleDirectoryUploadRequest);
